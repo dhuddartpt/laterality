@@ -1,0 +1,520 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Anatomic Laterality Quiz</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #16202a;
+      --muted: #5d6874;
+      --line: #d8dee6;
+      --panel: #ffffff;
+      --page: #f5f7fa;
+      --accent: #0f766e;
+      --accent-dark: #0b5f59;
+      --wrong: #b42318;
+      --right: #067647;
+      --shadow: 0 16px 45px rgba(22, 32, 42, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--ink);
+      background: var(--page);
+    }
+
+    main {
+      width: min(1120px, calc(100vw - 32px));
+      margin: 0 auto;
+      padding: 24px 0 32px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.5rem, 2.4vw, 2.2rem);
+      letter-spacing: 0;
+    }
+
+    .status {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 0.96rem;
+    }
+
+    .pill {
+      min-width: 118px;
+      padding: 8px 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      text-align: center;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 340px;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .stage,
+    .results {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .stage {
+      min-height: 620px;
+      padding: 18px;
+      display: grid;
+      grid-template-rows: minmax(360px, 1fr) auto auto;
+      gap: 16px;
+    }
+
+    .image-wrap {
+      width: 100%;
+      min-height: 360px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #eef2f6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .image-wrap img {
+      max-width: 100%;
+      max-height: 520px;
+      object-fit: contain;
+      display: block;
+    }
+
+    .empty-state {
+      max-width: 430px;
+      padding: 24px;
+      text-align: center;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 8px;
+      min-height: 52px;
+      padding: 12px 16px;
+      font-size: 1.05rem;
+      font-weight: 700;
+      cursor: pointer;
+      background: var(--accent);
+      color: white;
+      transition: transform 120ms ease, background 120ms ease, opacity 120ms ease;
+    }
+
+    button:hover:not(:disabled) {
+      background: var(--accent-dark);
+      transform: translateY(-1px);
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.48;
+    }
+
+    .secondary {
+      background: #364152;
+    }
+
+    .secondary:hover:not(:disabled) {
+      background: #202939;
+    }
+
+    .feedback {
+      min-height: 78px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .feedback strong {
+      color: var(--ink);
+    }
+
+    .feedback.correct strong {
+      color: var(--right);
+    }
+
+    .feedback.incorrect strong {
+      color: var(--wrong);
+    }
+
+    .results {
+      padding: 16px;
+    }
+
+    .results h2 {
+      margin: 0 0 12px;
+      font-size: 1.12rem;
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .metric {
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #f9fafb;
+    }
+
+    .metric span {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    .metric b {
+      font-size: 1.22rem;
+    }
+
+    ol {
+      margin: 0;
+      padding-left: 22px;
+    }
+
+    li {
+      padding: 9px 0;
+      border-bottom: 1px solid var(--line);
+      color: var(--muted);
+    }
+
+    li:last-child {
+      border-bottom: 0;
+    }
+
+    li strong {
+      color: var(--ink);
+    }
+
+    .result-tag {
+      font-weight: 700;
+    }
+
+    .result-tag.correct {
+      color: var(--right);
+    }
+
+    .result-tag.incorrect {
+      color: var(--wrong);
+    }
+
+    @media (max-width: 880px) {
+      .topbar {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .status {
+        justify-content: flex-start;
+      }
+
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .stage {
+        min-height: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="topbar">
+      <h1>Anatomic Laterality Quiz</h1>
+      <div class="status" aria-live="polite">
+        <div class="pill" id="progress">0 / 10</div>
+        <div class="pill" id="timer">0.00 sec</div>
+        <div class="pill">Normal: 2.50 sec</div>
+      </div>
+    </div>
+
+    <div class="layout">
+      <section class="stage" aria-label="Quiz">
+        <div class="image-wrap" id="imageWrap">
+          <div class="empty-state" id="emptyState">
+            Press Start to begin. Each image stays on screen until you choose Left or Right.
+          </div>
+          <img id="quizImage" alt="Anatomic laterality prompt" hidden>
+        </div>
+
+        <div class="controls">
+          <button id="leftButton" disabled>Left</button>
+          <button id="rightButton" disabled>Right</button>
+        </div>
+
+        <div class="controls">
+          <button class="secondary" id="startButton">Start</button>
+          <button class="secondary" id="resetButton">Reset</button>
+        </div>
+
+        <div class="feedback" id="feedback">
+          Answers are revealed only after you choose.
+        </div>
+      </section>
+
+      <aside class="results" aria-label="Results">
+        <h2>Results</h2>
+        <div class="summary">
+          <div class="metric">
+            <span>Average</span>
+            <b id="averageTime">--</b>
+          </div>
+          <div class="metric">
+            <span>Accuracy</span>
+            <b id="accuracy">--</b>
+          </div>
+        </div>
+        <ol id="resultList"></ol>
+      </aside>
+    </div>
+  </main>
+
+  <script>
+    const imageFiles = [
+      "left foot 1.jpg",
+      "left foot 2.jpg",
+      "left foot.jpg",
+      "left hand 1.jpg",
+      "left hand 2.jpg",
+      "left hand 3.jpg",
+      "left hand.jpg",
+      "right foot 1.jpg",
+      "right foot.jpg",
+      "right hand 1.jpg",
+      "right hand 2.jpg",
+      "right hand 3.jpg",
+      "right hand.jpg"
+    ];
+
+    const totalChoices = 10;
+    const normalSeconds = 2.5;
+    const progress = document.getElementById("progress");
+    const timer = document.getElementById("timer");
+    const quizImage = document.getElementById("quizImage");
+    const emptyState = document.getElementById("emptyState");
+    const feedback = document.getElementById("feedback");
+    const leftButton = document.getElementById("leftButton");
+    const rightButton = document.getElementById("rightButton");
+    const startButton = document.getElementById("startButton");
+    const resetButton = document.getElementById("resetButton");
+    const resultList = document.getElementById("resultList");
+    const averageTime = document.getElementById("averageTime");
+    const accuracy = document.getElementById("accuracy");
+
+    let queue = [];
+    let current = null;
+    let startTime = 0;
+    let timerHandle = null;
+    let results = [];
+    let acceptingChoice = false;
+
+    function shuffle(items) {
+      const copy = [...items];
+      for (let i = copy.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function answerFor(fileName) {
+      return fileName.toLowerCase().startsWith("left") ? "left" : "right";
+    }
+
+    function formatSeconds(value) {
+      return `${value.toFixed(2)} sec`;
+    }
+
+    function setChoiceButtons(enabled) {
+      leftButton.disabled = !enabled;
+      rightButton.disabled = !enabled;
+      acceptingChoice = enabled;
+    }
+
+    function updateTimer() {
+      if (!startTime) {
+        timer.textContent = "0.00 sec";
+        return;
+      }
+      timer.textContent = formatSeconds((performance.now() - startTime) / 1000);
+    }
+
+    function updateSummary() {
+      progress.textContent = `${results.length} / ${totalChoices}`;
+
+      if (!results.length) {
+        averageTime.textContent = "--";
+        accuracy.textContent = "--";
+        return;
+      }
+
+      const totalTime = results.reduce((sum, item) => sum + item.seconds, 0);
+      const correct = results.filter((item) => item.correct).length;
+      averageTime.textContent = formatSeconds(totalTime / results.length);
+      accuracy.textContent = `${correct} / ${results.length}`;
+    }
+
+    function renderResults() {
+      resultList.innerHTML = "";
+      results.forEach((item, index) => {
+        const row = document.createElement("li");
+        const speedText = item.seconds <= normalSeconds ? "normal speed" : "slower than normal";
+        row.innerHTML = `
+          <strong>${index + 1}. ${item.file}</strong><br>
+          Chose ${item.choice}; answer ${item.answer}. ${formatSeconds(item.seconds)}
+          <span class="result-tag ${item.correct ? "correct" : "incorrect"}">
+            ${item.correct ? "Correct" : "Incorrect"}
+          </span>
+          · ${speedText}
+        `;
+        resultList.appendChild(row);
+      });
+      updateSummary();
+    }
+
+    function showNextImage() {
+      if (results.length >= totalChoices || queue.length === 0) {
+        finishQuiz();
+        return;
+      }
+
+      current = queue.shift();
+      feedback.className = "feedback";
+      feedback.textContent = "Choose Left or Right.";
+      emptyState.hidden = true;
+      quizImage.hidden = false;
+      quizImage.src = encodeURI(current);
+      quizImage.alt = `Image ${results.length + 1} of ${totalChoices}`;
+      startTime = performance.now();
+      setChoiceButtons(true);
+      clearInterval(timerHandle);
+      timerHandle = setInterval(updateTimer, 50);
+      updateTimer();
+      progress.textContent = `${results.length + 1} / ${totalChoices}`;
+    }
+
+    function handleChoice(choice) {
+      if (!acceptingChoice || !current) return;
+
+      const seconds = (performance.now() - startTime) / 1000;
+      const answer = answerFor(current);
+      const correct = choice === answer;
+      results.push({ file: current, choice, answer, correct, seconds });
+
+      clearInterval(timerHandle);
+      timerHandle = null;
+      startTime = 0;
+      setChoiceButtons(false);
+      timer.textContent = formatSeconds(seconds);
+      feedback.className = `feedback ${correct ? "correct" : "incorrect"}`;
+      feedback.innerHTML = `
+        <strong>${correct ? "Correct." : "Incorrect."}</strong>
+        Answer: ${answer.toUpperCase()}. Reaction time: ${formatSeconds(seconds)}.
+      `;
+      renderResults();
+
+      window.setTimeout(showNextImage, 850);
+    }
+
+    function finishQuiz() {
+      current = null;
+      clearInterval(timerHandle);
+      timerHandle = null;
+      startTime = 0;
+      setChoiceButtons(false);
+      quizImage.hidden = true;
+      emptyState.hidden = false;
+      emptyState.textContent = "Finished. Press Reset to begin again.";
+      timer.textContent = "0.00 sec";
+      progress.textContent = `${results.length} / ${totalChoices}`;
+
+      const totalTime = results.reduce((sum, item) => sum + item.seconds, 0);
+      const average = results.length ? totalTime / results.length : 0;
+      feedback.className = "feedback";
+      feedback.innerHTML = `
+        <strong>Complete.</strong>
+        Average reaction speed: ${formatSeconds(average)}.
+      `;
+    }
+
+    function resetQuiz() {
+      clearInterval(timerHandle);
+      queue = shuffle(imageFiles).slice(0, totalChoices);
+      current = null;
+      startTime = 0;
+      timerHandle = null;
+      results = [];
+      setChoiceButtons(false);
+      quizImage.hidden = true;
+      quizImage.removeAttribute("src");
+      emptyState.hidden = false;
+      emptyState.textContent = "Press Start to begin. Each image stays on screen until you choose Left or Right.";
+      timer.textContent = "0.00 sec";
+      feedback.className = "feedback";
+      feedback.textContent = "Answers are revealed only after you choose.";
+      renderResults();
+    }
+
+    function startQuiz() {
+      resetQuiz();
+      showNextImage();
+    }
+
+    leftButton.addEventListener("click", () => handleChoice("left"));
+    rightButton.addEventListener("click", () => handleChoice("right"));
+    startButton.addEventListener("click", startQuiz);
+    resetButton.addEventListener("click", resetQuiz);
+    window.addEventListener("keydown", (event) => {
+      if (event.key.toLowerCase() === "l") handleChoice("left");
+      if (event.key.toLowerCase() === "r") handleChoice("right");
+    });
+
+    resetQuiz();
+  </script>
+</body>
+</html>
